@@ -1,39 +1,42 @@
 const express = require("express");
+const mysql = require("mysql");
+
 const app = express();
 const port = 3000;
 
 const config = {
   host: "db",
   user: "root",
-  password: "root",
+  password: "password",
   database: "nodedb",
 };
-const mysql = require("mysql");
-const connection = mysql.createConnection(config);
-
-const sql = `INSERT INTO people(name) values('Patrick')`;
-connection.query(sql);
-connection.end();
 
 app.get("/", (req, res) => {
-  const mysql = require("mysql");
+  const name = "Patrick";
   const connection = mysql.createConnection(config);
+  const sqlInsert = `INSERT INTO people(name) values('${name}')`;
 
-  connection.query("SELECT name FROM people", (err, result) => {
-    if (err) throw err;
+  connection.query(sqlInsert);
 
-    const names = result
-      .map((row) => {
-        return `<p>Nome: ${row.name}</p>`;
-      })
-      .join("\n");
+  const sqlGet = `SELECT id, name FROM people`;
 
-    res.send(`<h1>Full Cycle Rocks!</h1> ${names}`);
+  connection.query(sqlGet, (error, results, fields) => {
+    if (error) {
+      throw error;
+    }
+
+    let table = "<table>";
+    table += "<tr<th>Nome</th></tr>";
+    for (let people of results) {
+      table += `<tr><td>${people.name} ${people.id}</td></tr>`;
+    }
+
+    table += "</table>";
+    res.send("<h1>Full Cycle Rocks!</h1>" + table);
   });
-
   connection.end();
 });
 
 app.listen(port, () => {
-  console.log(`Rodando na porta ${port}`);
+  console.log("Rodando na porta " + port);
 });
